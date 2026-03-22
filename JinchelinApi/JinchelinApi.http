@@ -1,0 +1,6 @@
+@JinchelinApi_HostAddress = http://localhost:5102
+
+GET {{JinchelinApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
