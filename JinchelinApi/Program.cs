@@ -33,13 +33,15 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApiDocument(config => {
+    config.Title = "Jinchelin API";
+    config.Version = "v1";
+});
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseOpenApi();
+app.UseSwaggerUi();
 app.UseCors("AllowAll");
 app.MapControllers();
 app.Run();

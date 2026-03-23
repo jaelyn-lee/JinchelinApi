@@ -1,19 +1,18 @@
-using JinchelinApi.Data; //TS syntax: import { AppDbContext } from '../Data/AppDbContext';
+using JinchelinApi.Data;
 using JinchelinApi.DTOs;
 using JinchelinApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace JinchelinApi.Controllers; //TS syntax: export class DishesController extends ControllerBase {
+namespace JinchelinApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DishesController(AppDbContext db) : ControllerBase // TS syntax: constructor(private db: AppDbContext) // Dependency Injection
+public class DishesController(AppDbContext db) : ControllerBase
 {
     // GET /api/dishes
-    // Optional: ?search=carbonara  ?categoryId=uuid  ?sortBy=rating|name|date
     [HttpGet]
-    public async Task<IActionResult> GetAll(
+    public async Task<ActionResult<IEnumerable<DishResponse>>> GetAll(
         [FromQuery] string?  search,
         [FromQuery] Guid?    categoryId,
         [FromQuery] string   sortBy = "rating")
@@ -31,15 +30,13 @@ public class DishesController(AppDbContext db) : ControllerBase // TS syntax: co
 
         var dishes = await query.ToListAsync();
 
-        var result = dishes
-            .Select(d => ToResponse(d))
-            .AsEnumerable();
+        var result = dishes.Select(ToResponse).AsEnumerable();
 
         result = sortBy switch
         {
             "name" => result.OrderBy(d => d.Name),
             "date" => result.OrderByDescending(d => d.CreatedAt),
-            _      => result.OrderByDescending(d => d.AvgRating)  // default: rating
+            _      => result.OrderByDescending(d => d.AvgRating)
         };
 
         return Ok(result);
@@ -47,7 +44,7 @@ public class DishesController(AppDbContext db) : ControllerBase // TS syntax: co
 
     // GET /api/dishes/{id}
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<ActionResult<DishResponse>> GetById(Guid id)
     {
         var dish = await db.Dishes
             .Include(d => d.Category)
@@ -58,18 +55,18 @@ public class DishesController(AppDbContext db) : ControllerBase // TS syntax: co
         return Ok(ToResponse(dish));
     }
 
-    // GET /api/dishes/ranking  — Hall of Fame
+    // GET /api/dishes/ranking - Hall of fame
     [HttpGet("ranking")]
-    public async Task<IActionResult> GetRanking()
+    public async Task<ActionResult<IEnumerable<DishResponse>>> GetRanking()
     {
         var dishes = await db.Dishes
             .Include(d => d.Category)
             .Include(d => d.Reviews)
-            .Where(d => d.Reviews.Any())        // only reviewed dishes
+            .Where(d => d.Reviews.Any())
             .ToListAsync();
 
         var ranked = dishes
-            .Select(d => ToResponse(d))
+            .Select(ToResponse)
             .OrderByDescending(d => d.AvgRating)
             .ThenByDescending(d => d.ReviewCount);
 
@@ -78,7 +75,7 @@ public class DishesController(AppDbContext db) : ControllerBase // TS syntax: co
 
     // POST /api/dishes
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateDishRequest req)
+    public async Task<ActionResult<DishResponse>> Create([FromBody] CreateDishRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Name))
             return BadRequest("Dish name is required.");
@@ -97,7 +94,7 @@ public class DishesController(AppDbContext db) : ControllerBase // TS syntax: co
 
     // DELETE /api/dishes/{id}
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<ActionResult> Delete(Guid id)
     {
         var dish = await db.Dishes.FindAsync(id);
         if (dish is null) return NotFound();

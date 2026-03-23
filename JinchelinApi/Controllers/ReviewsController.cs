@@ -10,9 +10,9 @@ namespace JinchelinApi.Controllers;
 [Route("api/[controller]")]
 public class ReviewsController(AppDbContext db) : ControllerBase
 {
-    // GET /api/reviews  — all reviews, newest first
+    // GET /api/reviews
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<ReviewResponse>>> GetAll()
     {
         var reviews = await db.Reviews
             .Include(r => r.Dish)
@@ -25,7 +25,7 @@ public class ReviewsController(AppDbContext db) : ControllerBase
 
     // GET /api/reviews/{id}
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<ActionResult<ReviewResponse>> GetById(Guid id)
     {
         var review = await db.Reviews
             .Include(r => r.Dish)
@@ -36,9 +36,9 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         return Ok(ToResponse(review));
     }
 
-    // GET /api/reviews/dish/{dishId}  — all reviews for one dish
+    // GET /api/reviews/dish/{dishId}
     [HttpGet("dish/{dishId:guid}")]
-    public async Task<IActionResult> GetByDish(Guid dishId)
+    public async Task<ActionResult<IEnumerable<ReviewResponse>>> GetByDish(Guid dishId)
     {
         var reviews = await db.Reviews
             .Include(r => r.Dish)
@@ -52,7 +52,7 @@ public class ReviewsController(AppDbContext db) : ControllerBase
 
     // POST /api/reviews
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateReviewRequest req)
+    public async Task<ActionResult<ReviewResponse>> Create([FromBody] CreateReviewRequest req)
     {
         if (req.Rating is < 1 or > 5)
             return BadRequest("Rating must be between 1 and 5.");
@@ -79,9 +79,9 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = review.Id }, ToResponse(created));
     }
 
-    // PATCH /api/reviews/{id}/photo  — attach photo URL after upload
+    // PATCH /api/reviews/{id}/photo
     [HttpPatch("{id:guid}/photo")]
-    public async Task<IActionResult> UpdatePhoto(Guid id, [FromBody] string photoUrl)
+    public async Task<ActionResult> UpdatePhoto(Guid id, [FromBody] string photoUrl)
     {
         var review = await db.Reviews.FindAsync(id);
         if (review is null) return NotFound();
@@ -93,7 +93,7 @@ public class ReviewsController(AppDbContext db) : ControllerBase
 
     // DELETE /api/reviews/{id}
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<ActionResult> Delete(Guid id)
     {
         var review = await db.Reviews.FindAsync(id);
         if (review is null) return NotFound();

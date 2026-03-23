@@ -11,7 +11,7 @@ public class CategoriesController(AppDbContext db) : ControllerBase
 {
     // GET /api/categories
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoryResponse>>> GetAll()
     {
         var categories = await db.Categories
             .OrderBy(c => c.Name)
