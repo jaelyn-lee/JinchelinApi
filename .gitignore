@@ -3,3 +3,7 @@ appsettings.Development.json
 appsettings.json
 obj
 bin
+node_modules
+dist
+
+/generated/prisma

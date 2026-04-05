@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()"))
+  name       String   @unique
+  cuisine    String
+  created_at DateTime @default(now())
+
+  dishes Dish[]
+
+  @@map("categories")
+}
+
+model Dish {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()"))
+  name        String
+  category_id String?
+  created_at  DateTime @default(now())
+
+  category Category? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  reviews  Review[]
+
+  @@map("dishes")
+}
+
+model Review {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()"))
+  dish_id     String
+  rating      Int
+  review_text String?
+  photo_url   String?
+  reviewed_at DateTime @default(now())
+  created_at  DateTime @default(now())
+
+  dish Dish @relation(fields: [dish_id], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
