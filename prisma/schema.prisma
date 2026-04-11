@@ -32,7 +32,7 @@ model Dish {
 model Review {
   id          String   @id @default(dbgenerated("uuid_generate_v4()"))
   dish_id     String
-  rating      Int
+  rating      Decimal  @db.Decimal(2, 1)
   review_text String?
   photo_url   String?
   reviewed_at DateTime @default(now())
